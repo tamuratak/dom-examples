@@ -129,6 +129,9 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
   editContext.addEventListener("compositionend", (e) => {
     console.log("compositionend");
     isComposing = false;
+    for (const highlight of Object.values(imeHighlights)) {
+      highlight.clear();
+    }
     editorEl.classList.remove("is-composing");
   });
 
@@ -155,6 +158,7 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
   // Draw IME composition text formats if needed.
   editContext.addEventListener("textformatupdate", (e) => {
     const formats = e.getTextFormats();
+    console.log(`textformatupdate: ${JSON.stringify(formats.map((f) => ({rangeStart: f.rangeStart, rangeEnd: f.rangeEnd, underlineStyle: f.underlineStyle, underlineThickness: f.underlineThickness})))}`);
 
     for (const format of formats) {
       // Find the DOM selection that corresponds to the format's range.
