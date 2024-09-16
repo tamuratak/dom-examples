@@ -188,6 +188,10 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
 
   // Handle key presses that are not already handled by the EditContext.
   editorEl.addEventListener("keydown", (e) => {
+    console.log(`keydown: ${e.key}`);
+    if (isComposing) {
+      return;
+    }
     const start = Math.min(
       editContext.selectionStart,
       editContext.selectionEnd
@@ -204,10 +208,6 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
         editContext.selectionEnd
       );
     } else if (e.key === "Enter") {
-      console.log(`keydown: ${e.key}`);
-      if (isComposing) {
-        return;
-      }
       editContext.updateText(start, end, "\n");
       updateSelection(start + 1, start + 1);
       render(
