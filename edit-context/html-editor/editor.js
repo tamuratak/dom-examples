@@ -112,20 +112,30 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
   // Listen to the EditContext's textupdate event.
   // This tells us when text input happens. We use it to re-render the view.
   editContext.addEventListener("textupdate", (e) => {
+    const { text, selectionStart, selectionEnd } = e;
+    console.log(`textupdate: ${JSON.stringify({text, selectionStart, selectionEnd})}`);
     render(editContext.text, e.selectionStart, e.selectionEnd);
   });
+
+  let isComposing = false;
 
   // Visually show when we're composing text, like when using an IME,
   // or voice dictation.
   editContext.addEventListener("compositionstart", (e) => {
+    console.log("compositionstart");
+    isComposing = true;
     editorEl.classList.add("is-composing");
   });
   editContext.addEventListener("compositionend", (e) => {
+    console.log("compositionend");
+    isComposing = false;
     editorEl.classList.remove("is-composing");
   });
 
   // Update the character bounds when the EditContext needs it.
   editContext.addEventListener("characterboundsupdate", (e) => {
+    const { rangeStart, rangeEnd } = e;
+    console.log(`characterboundsupdate: ${JSON.stringify({rangeStart, rangeEnd})}`);
     const tokenNodes = fromOffsetsToRenderedTokenNodes(
       currentTokens,
       e.rangeStart,
@@ -194,6 +204,10 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
         editContext.selectionEnd
       );
     } else if (e.key === "Enter") {
+      console.log(`keydown: ${e.key}`);
+      if (isComposing) {
+        return;
+      }
       editContext.updateText(start, end, "\n");
       updateSelection(start + 1, start + 1);
       render(

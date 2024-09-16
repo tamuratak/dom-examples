@@ -1,0 +1,11 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Test on Browser",
+            "url": "http://127.0.0.1:2222/index.html"
+        }
+    ]
+}
