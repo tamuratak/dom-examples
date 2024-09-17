@@ -113,22 +113,27 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
   // This tells us when text input happens. We use it to re-render the view.
   editContext.addEventListener("textupdate", (e) => {
     const { text, selectionStart, selectionEnd } = e;
-    console.log(`textupdate: ${JSON.stringify({text, selectionStart, selectionEnd})}`);
+    console.log(`editContext textupdate: ${JSON.stringify({text, selectionStart, selectionEnd})}`);
     render(editContext.text, e.selectionStart, e.selectionEnd);
   });
 
-  let isComposing = false;
+  let editContextIsComposing = false;
 
+  editorEl.addEventListener("compositionstart", (e) => {
+    console.log("editorEl compositionstart");
+  });
+  
   // Visually show when we're composing text, like when using an IME,
   // or voice dictation.
   editContext.addEventListener("compositionstart", (e) => {
-    console.log("compositionstart");
-    isComposing = true;
+    const { bubbles, cancelable, cacomposed, type } = e;
+    console.log(`editContext compositionstart: ${JSON.stringify({bubbles, cancelable, cacomposed, type})}`);
+    editContextIsComposing = true;
     editorEl.classList.add("is-composing");
   });
   editContext.addEventListener("compositionend", (e) => {
-    console.log("compositionend");
-    isComposing = false;
+    console.log("editContext compositionend");
+    editContextIsComposing = false;
     for (const highlight of Object.values(imeHighlights)) {
       highlight.clear();
     }
@@ -138,7 +143,7 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
   // Update the character bounds when the EditContext needs it.
   editContext.addEventListener("characterboundsupdate", (e) => {
     const { rangeStart, rangeEnd } = e;
-    console.log(`characterboundsupdate: ${JSON.stringify({rangeStart, rangeEnd})}`);
+    console.log(`editContext characterboundsupdate: ${JSON.stringify({rangeStart, rangeEnd})}`);
     const tokenNodes = fromOffsetsToRenderedTokenNodes(
       currentTokens,
       e.rangeStart,
@@ -158,7 +163,7 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
   // Draw IME composition text formats if needed.
   editContext.addEventListener("textformatupdate", (e) => {
     const formats = e.getTextFormats();
-    console.log(`textformatupdate: ${JSON.stringify(formats.map((f) => ({rangeStart: f.rangeStart, rangeEnd: f.rangeEnd, underlineStyle: f.underlineStyle, underlineThickness: f.underlineThickness})))}`);
+    console.log(`editContext textformatupdate: ${JSON.stringify(formats.map((f) => ({rangeStart: f.rangeStart, rangeEnd: f.rangeEnd, underlineStyle: f.underlineStyle, underlineThickness: f.underlineThickness})))}`);
 
     for (const format of formats) {
       // Find the DOM selection that corresponds to the format's range.
@@ -190,11 +195,24 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
     }
   }
 
+  editContext.addEventListener("keypress", (e) => {
+    const { key } = e;
+    console.log(`editContext keypress: ${JSON.stringify({key})}`);
+  });
+
+  editContext.addEventListener("beforeinput", (e) => {
+    const { data, inputType } = e;
+    console.log(`editContext beforeinput: ${JSON.stringify({data, inputType})}`);
+  });
+  editorEl.addEventListener("beforeinput", (e) => {
+    const { data, inputType } = e;
+    console.log(`editorEl beforeinput: ${JSON.stringify({data, inputType})}`);
+  });
   // Handle key presses that are not already handled by the EditContext.
   editorEl.addEventListener("keydown", (e) => {
-    const {isComposing, key} = e;
-    console.log(`keydown: ${JSON.stringify({isComposing, key})}`);
-    if (isComposing) {
+    const {isComposing, key, code, keyCode} = e;
+    console.log(`editorEl keydown: ${JSON.stringify({isComposing, key, code, keyCode})}`);
+    if (editContextIsComposing) {
       return;
     }
     const start = Math.min(
