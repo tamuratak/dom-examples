@@ -192,7 +192,8 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
 
   // Handle key presses that are not already handled by the EditContext.
   editorEl.addEventListener("keydown", (e) => {
-    console.log(`keydown: ${e.key}`);
+    const {isComposing, key} = e;
+    console.log(`keydown: ${JSON.stringify({isComposing, key})}`);
     if (isComposing) {
       return;
     }
