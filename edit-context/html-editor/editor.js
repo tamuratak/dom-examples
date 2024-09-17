@@ -115,13 +115,16 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
     render(editContext.text, e.selectionStart, e.selectionEnd);
   });
 
+  let editContextIsComposing = false;
   // Visually show when we're composing text, like when using an IME,
   // or voice dictation.
   editContext.addEventListener("compositionstart", (e) => {
     editorEl.classList.add("is-composing");
+    editContextIsComposing = true;
   });
   editContext.addEventListener("compositionend", (e) => {
     editorEl.classList.remove("is-composing");
+    editContextIsComposing = false;
   });
 
   // Update the character bounds when the EditContext needs it.
@@ -178,6 +181,9 @@ if (IS_CUSTOM_HIGHLIGHT_SUPPORTED) {
 
   // Handle key presses that are not already handled by the EditContext.
   editorEl.addEventListener("keydown", (e) => {
+    if (editContextIsComposing) {
+      return;
+    }
     const start = Math.min(
       editContext.selectionStart,
       editContext.selectionEnd
